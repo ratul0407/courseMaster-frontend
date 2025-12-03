@@ -23,6 +23,9 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "../ui/accordion";
+import { useAuth } from "@/hooks/useAuth";
+import { authApi, useLogOutMutation } from "@/redux/features/auth/auth.api";
+import { useAppDispatch } from "@/redux/hooks";
 
 interface MenuItem {
   title: string;
@@ -127,8 +130,8 @@ const Navbar = ({
       url: "#",
     },
     {
-      title: "Blog",
-      url: "#",
+      title: "Dashboard",
+      url: "/dashbaord",
     },
   ],
   auth = {
@@ -136,8 +139,17 @@ const Navbar = ({
     signup: { title: "Sign up", url: "/register" },
   },
 }: Navbar1Props) => {
+  const { user, logOut: setAuthUser } = useAuth();
+  console.log(user);
+  const dispatch = useAppDispatch();
+  const [logout] = useLogOutMutation();
+  const handleLogout = async () => {
+    await logout(undefined);
+    setAuthUser();
+    dispatch(authApi.util.resetApiState());
+  };
   return (
-    <section className="py-4">
+    <section className="py-4 px-2 sm:px-4 md:px-8 lg:px-10">
       <div className="container">
         {/* Desktop Menu */}
         <nav className="hidden items-center justify-between lg:flex">
@@ -161,14 +173,21 @@ const Navbar = ({
               </NavigationMenu>
             </div>
           </div>
-          <div className="flex gap-2">
-            <Button asChild variant="outline" size="sm">
-              <a href={auth.login.url}>{auth.login.title}</a>
-            </Button>
-            <Button asChild size="sm">
-              <a href={auth.signup.url}>{auth.signup.title}</a>
-            </Button>
-          </div>
+
+          {user ? (
+            <div>
+              <Button onClick={handleLogout}>Logout </Button>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <Button asChild variant="outline" size="sm">
+                <a href={auth.login.url}>{auth.login.title}</a>
+              </Button>
+              <Button asChild size="sm">
+                <a href={auth.signup.url}>{auth.signup.title}</a>
+              </Button>
+            </div>
+          )}
         </nav>
 
         {/* Mobile Menu */}

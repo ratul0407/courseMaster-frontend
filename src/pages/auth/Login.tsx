@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import Password from "@/components/ui/Password";
 import config from "@/config";
 import { useLoginMutation } from "@/redux/features/auth/auth.api";
+import { useAuth } from "@/hooks/useAuth";
 
 const loginSchema = z.object({
   email: z.email(),
@@ -27,6 +28,7 @@ const loginSchema = z.object({
 });
 const Login = () => {
   const navigate = useNavigate();
+  const { login: setAuthLogin } = useAuth();
   const [login] = useLoginMutation();
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -38,7 +40,8 @@ const Login = () => {
   const onSubmit = async (data: unknown) => {
     try {
       const res = await login(data).unwrap();
-      if (res.success) {
+      if (res?.success) {
+        setAuthLogin(res?.data?.user);
         toast.success("Login successful!");
         navigate("/");
       }
@@ -52,6 +55,9 @@ const Login = () => {
   const handleDemoAdminLogin = async () => {
     onSubmit({ email: config.admin_email, password: config.admin_pass });
   };
+  const handleDemoStudentLogin = async () => {
+    onSubmit({ email: config.student_email, password: config.student_pass });
+  };
   return (
     <div className="max-w-xl mx-auto items-center justify-center grid min-h-svh lg:gap-12 ">
       <div className="flex flex-col  justify-center gap-2 text-center min-w-xl">
@@ -61,7 +67,7 @@ const Login = () => {
         </p>
         <div className="grid grid-cols-2 gap-4 max-w-xs items-center justify-center  mx-auto">
           <Button onClick={handleDemoAdminLogin}>Demo Admin</Button>
-          <Button onClick={handleDemoAdminLogin}>Demo Student</Button>
+          <Button onClick={handleDemoStudentLogin}>Demo Student</Button>
         </div>
         <div>
           <Form {...form}>
